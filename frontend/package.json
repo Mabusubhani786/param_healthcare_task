@@ -16,6 +16,7 @@
     "@tailwindcss/vite": "^4.2.1",
     "@tanstack/react-router": "^1.168.15",
     "@tanstack/react-router-devtools": "^1.166.13",
+    "@tanstack/react-table": "^8.21.3",
     "class-variance-authority": "^0.7.1",
     "clsx": "^2.1.1",
     "date-fns": "^4.4.0",

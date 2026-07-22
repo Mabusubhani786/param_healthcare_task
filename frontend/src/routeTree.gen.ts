@@ -11,7 +11,10 @@
 import { Route as rootRouteImport } from './routes/__root'
 import { Route as _mainLayoutRouteImport } from './routes/__mainLayout'
 import { Route as _mainLayoutIndexRouteImport } from './routes/__mainLayout/index'
+import { Route as _mainLayoutShiftsRouteImport } from './routes/__mainLayout/shifts'
 import { Route as _mainLayoutRosterRouteImport } from './routes/__mainLayout/roster'
+import { Route as _mainLayoutLeavesRouteImport } from './routes/__mainLayout/leaves'
+import { Route as _mainLayoutDoctorsRouteImport } from './routes/__mainLayout/doctors'
 
 const _mainLayoutRoute = _mainLayoutRouteImport.update({
   id: '/__mainLayout',
@@ -22,32 +25,63 @@ const _mainLayoutIndexRoute = _mainLayoutIndexRouteImport.update({
   path: '/',
   getParentRoute: () => _mainLayoutRoute,
 } as any)
+const _mainLayoutShiftsRoute = _mainLayoutShiftsRouteImport.update({
+  id: '/shifts',
+  path: '/shifts',
+  getParentRoute: () => _mainLayoutRoute,
+} as any)
 const _mainLayoutRosterRoute = _mainLayoutRosterRouteImport.update({
   id: '/roster',
   path: '/roster',
   getParentRoute: () => _mainLayoutRoute,
 } as any)
+const _mainLayoutLeavesRoute = _mainLayoutLeavesRouteImport.update({
+  id: '/leaves',
+  path: '/leaves',
+  getParentRoute: () => _mainLayoutRoute,
+} as any)
+const _mainLayoutDoctorsRoute = _mainLayoutDoctorsRouteImport.update({
+  id: '/doctors',
+  path: '/doctors',
+  getParentRoute: () => _mainLayoutRoute,
+} as any)
 
 export interface FileRoutesByFullPath {
   '/': typeof _mainLayoutIndexRoute
+  '/doctors': typeof _mainLayoutDoctorsRoute
+  '/leaves': typeof _mainLayoutLeavesRoute
   '/roster': typeof _mainLayoutRosterRoute
+  '/shifts': typeof _mainLayoutShiftsRoute
 }
 export interface FileRoutesByTo {
+  '/doctors': typeof _mainLayoutDoctorsRoute
+  '/leaves': typeof _mainLayoutLeavesRoute
   '/roster': typeof _mainLayoutRosterRoute
+  '/shifts': typeof _mainLayoutShiftsRoute
   '/': typeof _mainLayoutIndexRoute
 }
 export interface FileRoutesById {
   __root__: typeof rootRouteImport
   '/__mainLayout': typeof _mainLayoutRouteWithChildren
+  '/__mainLayout/doctors': typeof _mainLayoutDoctorsRoute
+  '/__mainLayout/leaves': typeof _mainLayoutLeavesRoute
   '/__mainLayout/roster': typeof _mainLayoutRosterRoute
+  '/__mainLayout/shifts': typeof _mainLayoutShiftsRoute
   '/__mainLayout/': typeof _mainLayoutIndexRoute
 }
 export interface FileRouteTypes {
   fileRoutesByFullPath: FileRoutesByFullPath
-  fullPaths: '/' | '/roster'
+  fullPaths: '/' | '/doctors' | '/leaves' | '/roster' | '/shifts'
   fileRoutesByTo: FileRoutesByTo
-  to: '/roster' | '/'
-  id: '__root__' | '/__mainLayout' | '/__mainLayout/roster' | '/__mainLayout/'
+  to: '/doctors' | '/leaves' | '/roster' | '/shifts' | '/'
+  id:
+    | '__root__'
+    | '/__mainLayout'
+    | '/__mainLayout/doctors'
+    | '/__mainLayout/leaves'
+    | '/__mainLayout/roster'
+    | '/__mainLayout/shifts'
+    | '/__mainLayout/'
   fileRoutesById: FileRoutesById
 }
 export interface RootRouteChildren {
@@ -70,6 +104,13 @@ declare module '@tanstack/react-router' {
       preLoaderRoute: typeof _mainLayoutIndexRouteImport
       parentRoute: typeof _mainLayoutRoute
     }
+    '/__mainLayout/shifts': {
+      id: '/__mainLayout/shifts'
+      path: '/shifts'
+      fullPath: '/shifts'
+      preLoaderRoute: typeof _mainLayoutShiftsRouteImport
+      parentRoute: typeof _mainLayoutRoute
+    }
     '/__mainLayout/roster': {
       id: '/__mainLayout/roster'
       path: '/roster'
@@ -77,16 +118,36 @@ declare module '@tanstack/react-router' {
       preLoaderRoute: typeof _mainLayoutRosterRouteImport
       parentRoute: typeof _mainLayoutRoute
     }
+    '/__mainLayout/leaves': {
+      id: '/__mainLayout/leaves'
+      path: '/leaves'
+      fullPath: '/leaves'
+      preLoaderRoute: typeof _mainLayoutLeavesRouteImport
+      parentRoute: typeof _mainLayoutRoute
+    }
+    '/__mainLayout/doctors': {
+      id: '/__mainLayout/doctors'
+      path: '/doctors'
+      fullPath: '/doctors'
+      preLoaderRoute: typeof _mainLayoutDoctorsRouteImport
+      parentRoute: typeof _mainLayoutRoute
+    }
   }
 }
 
 interface _mainLayoutRouteChildren {
+  _mainLayoutDoctorsRoute: typeof _mainLayoutDoctorsRoute
+  _mainLayoutLeavesRoute: typeof _mainLayoutLeavesRoute
   _mainLayoutRosterRoute: typeof _mainLayoutRosterRoute
+  _mainLayoutShiftsRoute: typeof _mainLayoutShiftsRoute
   _mainLayoutIndexRoute: typeof _mainLayoutIndexRoute
 }
 
 const _mainLayoutRouteChildren: _mainLayoutRouteChildren = {
+  _mainLayoutDoctorsRoute: _mainLayoutDoctorsRoute,
+  _mainLayoutLeavesRoute: _mainLayoutLeavesRoute,
   _mainLayoutRosterRoute: _mainLayoutRosterRoute,
+  _mainLayoutShiftsRoute: _mainLayoutShiftsRoute,
   _mainLayoutIndexRoute: _mainLayoutIndexRoute,
 }
 

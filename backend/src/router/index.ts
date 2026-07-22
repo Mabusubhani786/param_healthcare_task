@@ -5,6 +5,11 @@ import shiftTypeController from "@/controllers/shift-type.controller.ts";
 import rosterMonthController from "@/controllers/roster-month.controller.ts";
 import doctorLeaveController from "@/controllers/doctor-leave.controller.ts";
 import rosterAssignmentController from "@/controllers/roster-assignment.controller.ts";
+import {
+  generateRosterHandler,
+  manualAssignmentHandler,
+  validateAssignmentHandler,
+} from "@/controllers/roster-generator.controller.ts";
 
 const registerCrud = (
   server: FastifyInstance,
@@ -34,6 +39,11 @@ const registerRoutes = async (server: FastifyInstance) => {
   registerCrud(server, "roster-months", rosterMonthController);
   registerCrud(server, "doctor-leaves", doctorLeaveController);
   registerCrud(server, "roster-assignments", rosterAssignmentController);
+
+  // Roster generation & validation
+  server.post("/generate-roster", generateRosterHandler);
+  server.post("/manual-assignment", manualAssignmentHandler);
+  server.post("/validate-assignment", validateAssignmentHandler);
 };
 
 export default registerRoutes;

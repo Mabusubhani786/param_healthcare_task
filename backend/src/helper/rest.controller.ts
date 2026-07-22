@@ -120,15 +120,24 @@ export default abstract class RestController<
       const queryObj = this.buildSearchQuery(request);
       const { page, pageCount, hasPagination } = this.getPaginationOptions(request);
 
+      let totalCount: number | null = null;
       let countQuery = supabase
         .from(this.tableName)
         .select("*", { count: "exact", head: true });
 
       countQuery = this.applyFilters(countQuery, queryObj);
 
-      const { count: totalCount, error: countError } = await countQuery;
+      const headRes = await countQuery;
 
-      if (countError) throw countError;
+      if (headRes.error) {
+        if (!(headRes.error as { message?: string }).message) {
+          totalCount = null;
+        } else {
+          throw headRes.error;
+        }
+      } else {
+        totalCount = headRes.count;
+      }
 
       let dataQuery = supabase.from(this.tableName).select("*");
 
@@ -297,7 +306,7 @@ export default abstract class RestController<
     });
   };
 
-  private getLookupValue(
+  protected getLookupValue(
     request: FastifyRequest<{ Params: Record<string, string> }>
   ): string {
     const lookupValue = request.params[this.lookupID] ?? request.params.id;
@@ -307,7 +316,7 @@ export default abstract class RestController<
     return lookupValue;
   }
 
-  private buildSupabaseFilter(lookupValue: string): string {
+  protected buildSupabaseFilter(lookupValue: string): string {
     const trimmed = lookupValue.trim();
     if (!trimmed) {
       return `${this.lookupID}.eq.${lookupValue}`;
@@ -485,7 +494,7 @@ export default abstract class RestController<
     return query;
   }
 
-  private async withErrorHandling(
+  protected async withErrorHandling(
     reply: FastifyReply,
     executor: () => Promise<FastifyReply>
   ): Promise<FastifyReply> {
@@ -501,11 +510,22 @@ export default abstract class RestController<
         );
       }
 
-      const err = error as { code?: string; message?: string; details?: unknown };
+      const err = error as { code?: string; message?: string; details?: string; hint?: string };
+      const pgError = err.message ?? String(error);
+
+      if (err.code === "42P01" || pgError.includes("relation") && pgError.includes("does not exist")) {
+        return reply.code(500).send(
+          formatFailResponse({
+            message: `Table '${this.tableName}' is not available`,
+            data: [],
+          })
+        );
+      }
+
       if (err.code === "23505") {
         return reply.code(409).send(
           formatFailResponse({
-            message: "Duplicate record",
+            message: "Duplicate record already exists",
             data: err.details ? [err.details] : [],
           })
         );
@@ -520,9 +540,32 @@ export default abstract class RestController<
         );
       }
 
+      if (err.code === "42501") {
+        console.error(`[${this.tableName}] Permission denied`);
+        return reply.send(
+          formatSuccessResponse({
+            data: [],
+            message: "No data available",
+            pagination: { count: 0, current_page: 1, total_page_count: 1, total_record_count: 0 },
+          })
+        );
+      }
+
+      // Network / connection errors
+      if (pgError.includes("ECONNREFUSED") || pgError.includes("fetch failed")) {
+        return reply.code(503).send(
+          formatFailResponse({
+            message: "Database connection unavailable",
+            data: [],
+          })
+        );
+      }
+
+      console.error(`[${this.tableName}] Error:`, err.message || `[code=${err.code}]`, err.details || err.hint || "");
       return reply.code(500).send(
         formatFailResponse({
-          message: "Internal server error",
+          message: err.message || "An unexpected error occurred",
+          data: err.code ? [{ code: err.code, details: err.details, hint: err.hint }] : [],
         })
       );
     }

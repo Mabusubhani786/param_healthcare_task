@@ -24,6 +24,7 @@ export interface Doctor {
   allowed_shifts: ShiftTypeId[]; // Array of shift IDs
   max_nights_per_month: number | null;
   notes: string | null;
+  is_active: boolean;            // Soft delete flag
   created_at: string;            // ISO timestamp
 }
 
@@ -80,6 +81,7 @@ export interface DoctorWithAvailability extends Doctor {
   assignedShiftsThisWeek: number; // Current week (Mon-Sun)
 }
 
+// eslint-disable-next-line @typescript-eslint/no-empty-object-type
 export interface ShiftTypeWithPriority extends ShiftType {
   // retention_priority: 1=night, 2=morning, 3=afternoon, 4=day, 5=obgyn
 }
@@ -186,6 +188,7 @@ export interface AssignmentResult {
   doctorId: string | null;
   source: AssignmentSource;
   isManualOverride: boolean;
+  isShiftActive?: boolean;
   warnings: string[];
 }
 

@@ -12,11 +12,11 @@ function RouteComponent() {
   return (
     <SidebarProvider>
       <Menulayout />
-      <SidebarInset>
+      <SidebarInset className="min-h-0">
         <HeaderLayout />
-        <main className="flex-1 p-6">
+        <div className="flex-1 p-6 w-full flex flex-col h-0">
           <Outlet />
-        </main>
+        </div>
       </SidebarInset>
     </SidebarProvider>
   )

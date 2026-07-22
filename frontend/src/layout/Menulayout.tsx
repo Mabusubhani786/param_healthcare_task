@@ -2,23 +2,14 @@ import { Link, useRouterState } from "@tanstack/react-router"
 import {
   CalendarDays,
   PanelLeftClose,
+  Stethoscope,
+  Umbrella,
+  Clock,
 } from "lucide-react"
-import * as React from "react"
 
-import { Avatar, AvatarFallback, AvatarImage } from "@/components/ui/avatar"
-import {
-  Popover,
-  PopoverContent,
-  PopoverDescription,
-  PopoverHeader,
-  PopoverTitle,
-  PopoverTrigger,
-} from "@/components/ui/popover"
-import { Separator } from "@/components/ui/separator"
 import {
   Sidebar,
   SidebarContent,
-  SidebarFooter,
   SidebarGroup,
   SidebarGroupContent,
   SidebarGroupLabel,
@@ -31,19 +22,15 @@ import {
 
 const navigationItems = [
   { title: "Roster", to: "/roster", icon: CalendarDays },
+  { title: "Doctors", to: "/doctors", icon: Stethoscope },
+  { title: "Leaves", to: "/leaves", icon: Umbrella },
+  { title: "Shifts", to: "/shifts", icon: Clock },
 ] as const
-
-const userProfile = {
-  name: "Masani",
-  role: "Frontend Developer",
-  email: "masani@example.com",
-}
 
 export function Menulayout() {
   const pathname = useRouterState({
     select: (state) => state.location.pathname,
   })
-  const [profileOpen, setProfileOpen] = React.useState(false)
 
   return (
     <Sidebar collapsible="icon" variant="sidebar">
@@ -88,85 +75,6 @@ export function Menulayout() {
           </SidebarGroupContent>
         </SidebarGroup>
       </SidebarContent>
-
-      <SidebarFooter className="rounded-b-xl border border-t-0 border-sidebar-border bg-sidebar p-3">
-        <Popover open={profileOpen} onOpenChange={setProfileOpen}>
-          <PopoverTrigger asChild>
-            <button
-              type="button"
-              onMouseEnter={() => setProfileOpen(true)}
-              onMouseLeave={() => setProfileOpen(false)}
-              onFocus={() => setProfileOpen(true)}
-              onBlur={() => setProfileOpen(false)}
-              className="flex w-full items-center gap-3 rounded-xl px-2 py-2 text-left transition-colors hover:bg-sidebar-accent focus-visible:bg-sidebar-accent focus-visible:outline-none"
-            >
-              <Avatar size="lg">
-                <AvatarImage
-                  src="https://api.dicebear.com/9.x/initials/svg?seed=Masani"
-                  alt={userProfile.name}
-                />
-                <AvatarFallback>
-                  {userProfile.name.slice(0, 2).toUpperCase()}
-                </AvatarFallback>
-              </Avatar>
-              <div className="min-w-0 group-data-[collapsible=icon]:hidden">
-                <p className="truncate text-sm font-medium text-sidebar-foreground">
-                  {userProfile.name}
-                </p>
-                <p className="truncate text-xs text-muted-foreground">
-                  {userProfile.role}
-                </p>
-              </div>
-            </button>
-          </PopoverTrigger>
-          <PopoverContent
-            side="right"
-            align="end"
-            sideOffset={12}
-            onMouseEnter={() => setProfileOpen(true)}
-            onMouseLeave={() => setProfileOpen(false)}
-            className="w-64"
-          >
-            <div className="flex items-center gap-3">
-              <Avatar size="lg">
-                <AvatarImage
-                  src="https://api.dicebear.com/9.x/initials/svg?seed=Masani"
-                  alt={userProfile.name}
-                />
-                <AvatarFallback>
-                  {userProfile.name.slice(0, 2).toUpperCase()}
-                </AvatarFallback>
-              </Avatar>
-              <PopoverHeader className="gap-1">
-                <PopoverTitle>{userProfile.name}</PopoverTitle>
-                <PopoverDescription>{userProfile.role}</PopoverDescription>
-              </PopoverHeader>
-            </div>
-            <div className="rounded-md bg-muted px-3 py-2 text-xs text-muted-foreground">
-              {userProfile.email}
-            </div>
-            <Separator />
-            <div className="flex flex-col gap-1">
-              <Link
-                to="/roster"
-                onClick={() => setProfileOpen(false)}
-                className="flex items-center gap-2 rounded-md px-3 py-2 text-sm transition-colors hover:bg-accent hover:text-accent-foreground"
-              >
-                <CalendarDays className="size-4" />
-                <span>Roster</span>
-              </Link>
-            </div>
-            <Separator />
-            <button
-              type="button"
-              onClick={() => setProfileOpen(false)}
-              className="flex items-center gap-2 rounded-md px-3 py-2 text-sm text-red-500 transition-colors hover:bg-red-500/10"
-            >
-              <span>Sign out</span>
-            </button>
-          </PopoverContent>
-        </Popover>
-      </SidebarFooter>
 
       <SidebarRail />
     </Sidebar>

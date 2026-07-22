@@ -1,5 +1,5 @@
--- Duty Doctor Roster — Supabase schema (take-home reference)
--- Run in Supabase SQL Editor. Candidates must adapt/extend as needed.
+-- Duty Doctor Roster — Supabase schema
+-- Run in Supabase SQL Editor.
 
 -- ---------------------------------------------------------------------------
 -- Enums
@@ -21,6 +21,7 @@ CREATE TABLE IF NOT EXISTS doctors (
   allowed_shifts TEXT[] NOT NULL DEFAULT ARRAY['morning', 'day', 'obgyn', 'afternoon', 'night'],
   max_nights_per_month INT,
   notes TEXT,
+  is_active BOOLEAN NOT NULL DEFAULT TRUE,
   created_at TIMESTAMPTZ NOT NULL DEFAULT NOW()
 );
 
@@ -96,7 +97,7 @@ VALUES
 ON CONFLICT (id) DO NOTHING;
 
 -- ---------------------------------------------------------------------------
--- Seed fictional doctors (section 2 of task spec)
+-- Seed fictional doctors
 -- ---------------------------------------------------------------------------
 INSERT INTO doctors (slug, name, gender, weekly_off, allowed_shifts, max_nights_per_month, notes)
 VALUES
@@ -121,7 +122,7 @@ VALUES
 ON CONFLICT (slug) DO NOTHING;
 
 -- ---------------------------------------------------------------------------
--- Seed 4 leave days (section 3a — June 2026)
+-- Seed 4 leave days (June 2026)
 -- ---------------------------------------------------------------------------
 INSERT INTO doctor_leaves (doctor_id, leave_date, reason)
 SELECT d.id, v.leave_date::DATE, 'Seed leave'
@@ -135,7 +136,7 @@ JOIN doctors d ON d.slug = v.slug
 ON CONFLICT (doctor_id, leave_date) DO NOTHING;
 
 -- ---------------------------------------------------------------------------
--- RLS (service role / API access — tighten for production)
+-- RLS (service role / API access)
 -- ---------------------------------------------------------------------------
 ALTER TABLE doctors ENABLE ROW LEVEL SECURITY;
 ALTER TABLE shift_types ENABLE ROW LEVEL SECURITY;
