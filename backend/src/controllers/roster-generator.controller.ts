@@ -34,7 +34,11 @@ interface ManualAssignmentBody {
 }
 
 async function fetchAllDoctors(): Promise<Doctor[]> {
-  const { data, error } = await supabase.from("doctors").select("*").order("name");
+  const { data, error } = await supabase
+    .from("doctors")
+    .select("*")
+    .eq("is_active", true)
+    .order("name");
   if (error) throw error;
   return data ?? [];
 }

@@ -19,7 +19,13 @@ import {
 } from "@/types/roster.types.ts";
 
 const WEEKDAY_NAMES: Weekday[] = [
-  "sunday", "monday", "tuesday", "wednesday", "thursday", "friday", "saturday",
+  "sunday",
+  "monday",
+  "tuesday",
+  "wednesday",
+  "thursday",
+  "friday",
+  "saturday",
 ];
 
 function getWeekdayName(dow: number): Weekday {
@@ -35,7 +41,9 @@ function getDaysInMonth(year: number, month: number): number {
 }
 
 function getWeekNumber(date: Date): number {
-  const d = new Date(Date.UTC(date.getFullYear(), date.getMonth(), date.getDate()));
+  const d = new Date(
+    Date.UTC(date.getFullYear(), date.getMonth(), date.getDate())
+  );
   const dayNum = d.getUTCDay() || 7;
   d.setUTCDate(d.getUTCDate() + 4 - dayNum);
   const yearStart = new Date(Date.UTC(d.getUTCFullYear(), 0, 1));
@@ -47,7 +55,11 @@ function getIsoWeekKey(year: number, month: number, day: number): string {
   return `${d.getFullYear()}-W${getWeekNumber(d)}`;
 }
 
-function parseDate(dateKey: string): { year: number; month: number; day: number } {
+function parseDate(dateKey: string): {
+  year: number;
+  month: number;
+  day: number;
+} {
   const parts = dateKey.split("-").map(Number);
   return { year: parts[0] ?? 2026, month: parts[1] ?? 1, day: parts[2] ?? 1 };
 }
@@ -84,7 +96,7 @@ export function buildSchedulingContext(
   shiftTypes: ShiftType[],
   leaves: DoctorLeave[],
   existingAssignments: RosterAssignment[],
-  overwriteManual: boolean,
+  overwriteManual: boolean
 ): SchedulingContext {
   const days = getDaysInMonth(year, month);
 
@@ -137,10 +149,7 @@ function isRecoveryExempt(doc: Doctor): boolean {
   return POST_NIGHT_RECOVERY_EXEMPT_SLUGS.includes(doc.slug as never);
 }
 
-function isOnRecoveryBlock(
-  docState: DoctorState,
-  date: string,
-): boolean {
+function isOnRecoveryBlock(docState: DoctorState, date: string): boolean {
   if (isRecoveryExempt(docState.doctor)) return false;
   const prevDate = getPrevDateStr(date);
   return docState.lastNightDate === prevDate;
@@ -151,7 +160,7 @@ function getAvailableDoctors(
   doctorStates: Map<string, DoctorState>,
   day: DayState,
   shiftId: ShiftTypeId,
-  shiftType: ShiftType,
+  shiftType: ShiftType
 ): Doctor[] {
   const available: Doctor[] = [];
   const prevDate = getPrevDateStr(day.date);
@@ -168,7 +177,8 @@ function getAvailableDoctors(
     if (docState.shiftsThisWeek >= MAX_SHIFTS_PER_WEEK) continue;
     if (day.assignments.has(shiftId)) continue;
 
-    if (isOnRecoveryBlock(docState, day.date) && shiftId !== "afternoon") continue;
+    if (isOnRecoveryBlock(docState, day.date) && shiftId !== "afternoon")
+      continue;
 
     if (shiftId === "night") {
       const maxNights = doc.max_nights_per_month ?? Infinity;
@@ -188,7 +198,7 @@ function countShiftsInWeekForDoctor(
   shiftType: ShiftTypeId,
   doctorId: string,
   year: number,
-  month: number,
+  month: number
 ): number {
   const currentDay = allDayStates[currentDayIdx];
   if (!currentDay) return 0;
@@ -212,7 +222,7 @@ function countShiftsInWeekForDoctor(
 function pickBestDoctorForNight(
   candidates: Doctor[],
   doctorStates: Map<string, DoctorState>,
-  nightDistributionCounts: Map<string, number>,
+  nightDistributionCounts: Map<string, number>
 ): Doctor | null {
   if (candidates.length === 0) return null;
 
@@ -249,7 +259,7 @@ function pickBestDoctorForNight(
 
 function pickBestDoctorForObgyn(
   candidates: Doctor[],
-  obgynDistributionCounts: Map<string, number>,
+  obgynDistributionCounts: Map<string, number>
 ): Doctor | null {
   if (candidates.length === 0) return null;
 
@@ -265,7 +275,7 @@ function pickBestDoctorForObgyn(
 
 function pickDoctorForOtherShift(
   candidates: Doctor[],
-  doctorStates: Map<string, DoctorState>,
+  doctorStates: Map<string, DoctorState>
 ): Doctor | null {
   if (candidates.length === 0) return null;
 
@@ -285,38 +295,64 @@ function shouldDropShiftsForDay(
   day: DayState,
   ctx: SchedulingContext,
   doctorStates: Map<string, DoctorState>,
-  manualAssignmentsMap: Map<string, AssignmentResult>,
+  manualAssignmentsMap: Map<string, AssignmentResult>
 ): { dropObgyn: boolean; dropDay: boolean; warnings: string[] } {
   const result = { dropObgyn: false, dropDay: false, warnings: [] as string[] };
 
   let unavailableCount = 0;
   for (const doc of ctx.doctors) {
     const docState = doctorStates.get(doc.id);
-    if (!docState) { unavailableCount++; continue; }
-    if (docState.weeklyOffDates.has(day.date)) { unavailableCount++; continue; }
-    if (docState.leaveDates.has(day.date)) { unavailableCount++; continue; }
-    if (isOnRecoveryBlock(docState, day.date)) { unavailableCount++; continue; }
-    if (docState.shiftsThisWeek >= MAX_SHIFTS_PER_WEEK) { unavailableCount++; continue; }
-    if (doc.slug !== ROHAN_SLUG && docState.consecutiveNights > 0) { unavailableCount++; continue; }
+    if (!docState) {
+      unavailableCount++;
+      continue;
+    }
+    if (docState.weeklyOffDates.has(day.date)) {
+      unavailableCount++;
+      continue;
+    }
+    if (docState.leaveDates.has(day.date)) {
+      unavailableCount++;
+      continue;
+    }
+    if (isOnRecoveryBlock(docState, day.date)) {
+      unavailableCount++;
+      continue;
+    }
+    if (docState.shiftsThisWeek >= MAX_SHIFTS_PER_WEEK) {
+      unavailableCount++;
+      continue;
+    }
+    if (doc.slug !== ROHAN_SLUG && docState.consecutiveNights > 0) {
+      unavailableCount++;
+      continue;
+    }
     // Same-day conflict from manual overrides only (loaded before main assignment loop)
-    if (day.doctorShiftsThisDay.has(doc.id)) { unavailableCount++; continue; }
+    if (day.doctorShiftsThisDay.has(doc.id)) {
+      unavailableCount++;
+      continue;
+    }
   }
 
   if (unavailableCount >= 2) {
     result.dropObgyn = true;
-    result.warnings.push(`${day.date}: OBGYN shift dropped (${unavailableCount} doctors unavailable)`);
+    result.warnings.push(
+      `${day.date}: OBGYN shift dropped (${unavailableCount} doctors unavailable)`
+    );
   }
   if (unavailableCount >= 3) {
     result.dropDay = true;
-    result.warnings.push(`${day.date}: Day shift dropped (${unavailableCount} doctors unavailable)`);
+    result.warnings.push(
+      `${day.date}: Day shift dropped (${unavailableCount} doctors unavailable)`
+    );
   }
 
   return result;
 }
 
-export function generateRoster(
-  ctx: SchedulingContext,
-): { assignments: AssignmentResult[]; warnings: string[] } {
+export function generateRoster(ctx: SchedulingContext): {
+  assignments: AssignmentResult[];
+  warnings: string[];
+} {
   const allAssignments: AssignmentResult[] = [];
   const warnings: string[] = [];
 
@@ -382,6 +418,25 @@ export function generateRoster(
     }
   }
 
+  if (allDayStates.length > 0) {
+    const firstDayNum = parseInt(
+      allDayStates[0]!.date.split("-")[2] ?? "1",
+      10
+    );
+    const firstWeekKey = getIsoWeekKey(ctx.year, ctx.month, firstDayNum);
+    for (const docState of doctorStates.values()) {
+      let count = 0;
+      for (const [key, ma] of manualAssignmentsMap) {
+        if (ma.doctorId !== docState.doctor.id) continue;
+        const datePart = key.split("|")[0] ?? "";
+        const dayNum = parseInt(datePart.split("-")[2] ?? "1", 10);
+        if (getIsoWeekKey(ctx.year, ctx.month, dayNum) === firstWeekKey)
+          count++;
+      }
+      docState.shiftsThisWeek = count;
+    }
+  }
+
   // Distribution counters
   const nightDistributionCounts = new Map<string, number>();
   for (const slug of NIGHT_DISTRIBUTION_SLUGS) {
@@ -400,13 +455,19 @@ export function generateRoster(
     if (a.shiftTypeId === "night" && a.doctorId) {
       const doc = ctx.doctors.find((d) => d.id === a.doctorId);
       if (doc && NIGHT_DISTRIBUTION_SLUGS.includes(doc.slug as never)) {
-        nightDistributionCounts.set(doc.id, (nightDistributionCounts.get(doc.id) ?? 0) + 1);
+        nightDistributionCounts.set(
+          doc.id,
+          (nightDistributionCounts.get(doc.id) ?? 0) + 1
+        );
       }
     }
     if (a.shiftTypeId === "obgyn" && a.doctorId) {
       const doc = ctx.doctors.find((d) => d.id === a.doctorId);
       if (doc && OBGYN_ELIGIBLE_SLUGS.includes(doc.slug as never)) {
-        obgynDistributionCounts.set(doc.id, (obgynDistributionCounts.get(doc.id) ?? 0) + 1);
+        obgynDistributionCounts.set(
+          doc.id,
+          (obgynDistributionCounts.get(doc.id) ?? 0) + 1
+        );
       }
     }
   }
@@ -414,7 +475,13 @@ export function generateRoster(
   const rohanDoc = ctx.doctors.find((d) => d.slug === ROHAN_SLUG);
   const rohanDocId = rohanDoc?.id;
 
-  const shiftsToAssign: ShiftTypeId[] = ["night", "morning", "afternoon", "obgyn", "day"];
+  const shiftsToAssign: ShiftTypeId[] = [
+    "night",
+    "morning",
+    "afternoon",
+    "obgyn",
+    "day",
+  ];
 
   for (let d = 0; d < allDayStates.length; d++) {
     const day = allDayStates[d];
@@ -443,19 +510,32 @@ export function generateRoster(
     }
 
     // Reduced staffing check (before assignment — counts intrinsic unavailability only)
-    const reduced = shouldDropShiftsForDay(day, ctx, doctorStates, manualAssignmentsMap);
+    const reduced = shouldDropShiftsForDay(
+      day,
+      ctx,
+      doctorStates,
+      manualAssignmentsMap
+    );
     warnings.push(...reduced.warnings);
     if (reduced.dropObgyn) {
       day.assignments.set("obgyn", {
-        date: day.date, shiftTypeId: "obgyn", doctorId: null,
-        source: "cleared", isManualOverride: false, isShiftActive: false,
+        date: day.date,
+        shiftTypeId: "obgyn",
+        doctorId: null,
+        source: "cleared",
+        isManualOverride: false,
+        isShiftActive: false,
         warnings: ["Dropped due to reduced staffing"],
       });
     }
     if (reduced.dropDay) {
       day.assignments.set("day", {
-        date: day.date, shiftTypeId: "day", doctorId: null,
-        source: "cleared", isManualOverride: false, isShiftActive: false,
+        date: day.date,
+        shiftTypeId: "day",
+        doctorId: null,
+        source: "cleared",
+        isManualOverride: false,
+        isShiftActive: false,
         warnings: ["Dropped due to reduced staffing"],
       });
     }
@@ -465,9 +545,23 @@ export function generateRoster(
       const rKey = `${day.date}|night`;
       if (!manualAssignmentsMap.has(rKey) && !day.assignments.has("night")) {
         const rohanState = doctorStates.get(rohanDocId);
-        if (rohanState && !rohanState.leaveDates.has(day.date) && !rohanState.weeklyOffDates.has(day.date)) {
-          const weekNights = countShiftsInWeekForDoctor(allDayStates, d, "night", rohanDocId, ctx.year, ctx.month);
-          if (weekNights < 4 && rohanState.shiftsThisWeek < MAX_SHIFTS_PER_WEEK) {
+        if (
+          rohanState &&
+          !rohanState.leaveDates.has(day.date) &&
+          !rohanState.weeklyOffDates.has(day.date)
+        ) {
+          const weekNights = countShiftsInWeekForDoctor(
+            allDayStates,
+            d,
+            "night",
+            rohanDocId,
+            ctx.year,
+            ctx.month
+          );
+          if (
+            weekNights < 4 &&
+            rohanState.shiftsThisWeek < MAX_SHIFTS_PER_WEEK
+          ) {
             const a: AssignmentResult = {
               date: day.date,
               shiftTypeId: "night",
@@ -490,12 +584,29 @@ export function generateRoster(
     // Rohan's 1 Morning + 1 Afternoon per week
     if (rohanDocId) {
       const rohanState = doctorStates.get(rohanDocId);
-      if (rohanState && !rohanState.leaveDates.has(day.date) && !rohanState.weeklyOffDates.has(day.date)) {
-        if (!day.doctorShiftsThisDay.has(rohanDocId) && rohanState.shiftsThisWeek < MAX_SHIFTS_PER_WEEK) {
+      if (
+        rohanState &&
+        !rohanState.leaveDates.has(day.date) &&
+        !rohanState.weeklyOffDates.has(day.date)
+      ) {
+        if (
+          !day.doctorShiftsThisDay.has(rohanDocId) &&
+          rohanState.shiftsThisWeek < MAX_SHIFTS_PER_WEEK
+        ) {
           for (const shiftId of ["morning", "afternoon"] as ShiftTypeId[]) {
             const key = `${day.date}|${shiftId}`;
-            if (!manualAssignmentsMap.has(key) && !day.assignments.has(shiftId)) {
-              const weekCount = countShiftsInWeekForDoctor(allDayStates, d, shiftId, rohanDocId, ctx.year, ctx.month);
+            if (
+              !manualAssignmentsMap.has(key) &&
+              !day.assignments.has(shiftId)
+            ) {
+              const weekCount = countShiftsInWeekForDoctor(
+                allDayStates,
+                d,
+                shiftId,
+                rohanDocId,
+                ctx.year,
+                ctx.month
+              );
               if (weekCount < 1) {
                 const a: AssignmentResult = {
                   date: day.date,
@@ -525,12 +636,22 @@ export function generateRoster(
       const shiftType = ctx.shiftTypes.find((s) => s.id === shiftId);
       if (!shiftType) continue;
 
-      const available = getAvailableDoctors(ctx, doctorStates, day, shiftId, shiftType);
+      const available = getAvailableDoctors(
+        ctx,
+        doctorStates,
+        day,
+        shiftId,
+        shiftType
+      );
 
       let chosen: Doctor | null = null;
 
       if (shiftId === "night") {
-        chosen = pickBestDoctorForNight(available, doctorStates, nightDistributionCounts);
+        chosen = pickBestDoctorForNight(
+          available,
+          doctorStates,
+          nightDistributionCounts
+        );
       } else if (shiftId === "obgyn") {
         chosen = pickBestDoctorForObgyn(available, obgynDistributionCounts);
       } else {
@@ -559,14 +680,14 @@ export function generateRoster(
             docState.lastNightDate = day.date;
             nightDistributionCounts.set(
               chosen.id,
-              (nightDistributionCounts.get(chosen.id) ?? 0) + 1,
+              (nightDistributionCounts.get(chosen.id) ?? 0) + 1
             );
           }
 
           if (shiftId === "obgyn") {
             obgynDistributionCounts.set(
               chosen.id,
-              (obgynDistributionCounts.get(chosen.id) ?? 0) + 1,
+              (obgynDistributionCounts.get(chosen.id) ?? 0) + 1
             );
           }
         }
@@ -630,7 +751,7 @@ export function validateManualAssignment(
     assignmentDate: string;
     shiftTypeId: ShiftTypeId;
     doctorId: string | null;
-  },
+  }
 ): string[] {
   const warnings: string[] = [];
 
@@ -653,7 +774,9 @@ export function validateManualAssignment(
   }
 
   if (!doc.allowed_shifts.includes(request.shiftTypeId)) {
-    warnings.push(`${doc.name} is not allowed to work ${request.shiftTypeId} shift`);
+    warnings.push(
+      `${doc.name} is not allowed to work ${request.shiftTypeId} shift`
+    );
   }
 
   const { year, month, day } = parseDate(request.assignmentDate);
@@ -668,11 +791,18 @@ export function validateManualAssignment(
     warnings.push(`${doc.name} is on leave on ${request.assignmentDate}`);
   }
 
-  const existingDayAssignments = ctx.existingAssignments.get(request.assignmentDate);
+  const existingDayAssignments = ctx.existingAssignments.get(
+    request.assignmentDate
+  );
   if (existingDayAssignments) {
     for (const existing of existingDayAssignments) {
-      if (existing.doctor_id === doc.id && existing.shift_type_id !== request.shiftTypeId) {
-        warnings.push(`${doc.name} is already assigned to ${existing.shift_type_id} on ${request.assignmentDate}`);
+      if (
+        existing.doctor_id === doc.id &&
+        existing.shift_type_id !== request.shiftTypeId
+      ) {
+        warnings.push(
+          `${doc.name} is already assigned to ${existing.shift_type_id} on ${request.assignmentDate}`
+        );
       }
     }
   }
@@ -681,9 +811,16 @@ export function validateManualAssignment(
     const prevDate = getPrevDateStr(request.assignmentDate);
     const prevDayAssignments = ctx.existingAssignments.get(prevDate);
     if (prevDayAssignments) {
-      const prevNight = prevDayAssignments.find((a) => a.shift_type_id === "night");
-      if (prevNight?.doctor_id === doc.id && request.shiftTypeId !== "afternoon") {
-        warnings.push(`${doc.name} had a night shift on ${prevDate} — post-night recovery requires afternoon only or off`);
+      const prevNight = prevDayAssignments.find(
+        (a) => a.shift_type_id === "night"
+      );
+      if (
+        prevNight?.doctor_id === doc.id &&
+        request.shiftTypeId !== "afternoon"
+      ) {
+        warnings.push(
+          `${doc.name} had a night shift on ${prevDate} — post-night recovery requires afternoon only or off`
+        );
       }
     }
   }
@@ -692,9 +829,13 @@ export function validateManualAssignment(
     const prevDate = getPrevDateStr(request.assignmentDate);
     const prevDayAssignments = ctx.existingAssignments.get(prevDate);
     if (prevDayAssignments) {
-      const prevNight = prevDayAssignments.find((a) => a.shift_type_id === "night");
+      const prevNight = prevDayAssignments.find(
+        (a) => a.shift_type_id === "night"
+      );
       if (prevNight?.doctor_id === doc.id) {
-        warnings.push(`${doc.name} had a night shift on ${prevDate} — consecutive night shifts are not allowed`);
+        warnings.push(
+          `${doc.name} had a night shift on ${prevDate} — consecutive night shifts are not allowed`
+        );
       }
     }
   }
@@ -709,7 +850,9 @@ export function validateManualAssignment(
       }
     }
     if (nightCount >= doc.max_nights_per_month) {
-      warnings.push(`${doc.name} already has ${doc.max_nights_per_month} night shifts this month (maximum reached)`);
+      warnings.push(
+        `${doc.name} already has ${doc.max_nights_per_month} night shifts this month (maximum reached)`
+      );
     }
   }
 
@@ -725,7 +868,9 @@ export function validateManualAssignment(
     }
   }
   if (weekShiftCount >= MAX_SHIFTS_PER_WEEK) {
-    warnings.push(`${doc.name} already has ${MAX_SHIFTS_PER_WEEK} shifts this week (maximum reached)`);
+    warnings.push(
+      `${doc.name} already has ${MAX_SHIFTS_PER_WEEK} shifts this week (maximum reached)`
+    );
   }
 
   return warnings;
